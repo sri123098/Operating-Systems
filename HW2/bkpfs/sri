@@ -1,0 +1,5 @@
+#!/bin/bash
+umount /mnt/bkpfs
+rmmod bkpfs
+insmod bkpfs.ko
+mount -t bkpfs -o maxver=5 /test/HW2_v6/ /mnt/bkpfs

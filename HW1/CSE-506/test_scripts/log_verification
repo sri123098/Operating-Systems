@@ -1,0 +1,51 @@
+One argument Testcase passed
+Null arguments Testcase passed
+Testcase for -h option
+-h argument testcase passed
+Testing empty file, small,medium, large sizes
+------------------------------------------->Test case 0 passed
+------------------------------------------->Test case 1 passed
+------------------------------------------->Test case 2 passed
+------------------------------------------->Test case 3 passed
+Testing the encryption and decryption of an empty file
+------------------------------------------->Test case 0 passed
+Testing the encrypted file if it is different from the input file
+------------------------------------------->Test case 1 passed
+Testing the encryption and decryption of an small file
+------------------------------------------->Test case 0 passed
+Testing the encryption and decryption of an medium file
+------------------------------------------->Test case 1 passed
+Testing the encryption and decryption of an large file
+------------------------------------------->Test case 2 passed
+Testing the encryption and then the decryption with a different password
+error 13---------------------->Test case of different password is passed
+Testing the encryption and decryption of an medium file
+------------------------------------------->Test case 1 passed
+Testing the encryption and decryption of an large file
+------------------------------------------->Test case 2 passed
+------------------------------------------->Password Length test case passed
+------------------------------------------->Test case 4 passed
+------------------------------------------->Test case 5 passed
+------------------------------------------->Test case 6 passed
+------------------------------------------->Test case 7 passed
+------------------------------------------->Test case 8 passed
+------------------------------------------->Test case 9 passed
+------------------------------------------->Test case 10 passed
+Test1 ./xcpenc -p password -c input out3
+------------------------------------------->Test case 1 passed
+Test2 ./xcpenc -c input out3 -p password
+------------------------------------------->Test case 2 passed
+Test3 ./xcpenc -c input out3
+------------------------------------------->Test case 3 passed
+Testing for both the files as same with inode match
+------------------------------------------->Test case for inode is passed
+------------------------------------------->Testcase for inode is passed
+Testing for both the files whether they are symbolic link of each other with inode match
+------------------------------------------->Test case for Symbolic link is passed
+------------------------------------------->Test case for Symbolic link is passed
+Non existing file test case for encryption passed
+Non existing file test case for decryption passed
+Testcase for partially deleted file
+Test case for vfs unlink is verified by changing the sys_cpenc.c file and then setting the checking for the
+deletion of a file. Please check the check_vfs_unlink. So, it will be cleaning the output file if some error occurs.
+Non existing file test case passed

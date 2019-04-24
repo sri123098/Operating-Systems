@@ -1,0 +1,4 @@
+rm -rf patch
+perl ../scripts/checkpatch.pl --file tcpenc.c > patch
+grep -A2 ERROR patch | wc
+grep -A2 ERROR patch | tail -n40

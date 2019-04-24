@@ -1,0 +1,32 @@
+gcc -Wall -Werror -I/lib/modules/4.20.6+/build/arch/x86/include/generated/uapi -I/lib/modules/4.20.6+/build/arch/x86/include/uapi tcpenc.c -o xcpenc -lssl -lcrypto
+make -Wall -Werror -C /lib/modules/4.20.6+/build M=/usr/src/hw1-skalluri/CSE-506 modules
+make[1]: Entering directory `/usr/src/hw1-skalluri'
+  Building modules, stage 2.
+  MODPOST 1 modules
+make[1]: Leaving directory `/usr/src/hw1-skalluri'
+Module                  Size  Used by
+sys_cpenc              16384  0 
+aesni_intel           200704  0 
+crypto_simd            16384  1 aesni_intel
+glue_helper            16384  1 aesni_intel
+vmw_vmci               81920  0 
+sd_mod                 53248  5 
+serio_raw              20480  0 
+e1000                 155648  0 
+mptspi                 28672  3 
+scsi_transport_spi     40960  1 mptspi
+mptscsih               45056  1 mptspi
+mptbase               110592  2 mptspi,mptscsih
+Module                  Size  Used by
+sys_cpenc              16384  0 
+aesni_intel           200704  0 
+crypto_simd            16384  1 aesni_intel
+glue_helper            16384  1 aesni_intel
+vmw_vmci               81920  0 
+sd_mod                 53248  5 
+serio_raw              20480  0 
+e1000                 155648  0 
+mptspi                 28672  3 
+scsi_transport_spi     40960  1 mptspi
+mptscsih               45056  1 mptspi
+mptbase               110592  2 mptspi,mptscsih
