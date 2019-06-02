@@ -1,6 +1,0 @@
-MD5_DIGEST_LENGTH 16Flags which are set in this pflag, cflag, eflag, dflag 0 1 0 0
-Input file input, Output file out, Password (null) , Flags p flag 0, c flag 1, e flag 0, d flag 0 and C flag 0
-Checking whether the file is regular or not
-File doesn't exists.(errno=2)
-Pass the correct arguments as stated below:
-usage: %s -p password -[c|e|d] input_fname output_fname 
