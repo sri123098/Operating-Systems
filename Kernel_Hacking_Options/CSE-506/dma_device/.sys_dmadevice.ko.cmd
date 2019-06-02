@@ -1,0 +1,1 @@
+cmd_/usr/src/hw3-cse506g23/CSE-506/dma_device/sys_dmadevice.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /usr/src/hw3-cse506g23/CSE-506/dma_device/sys_dmadevice.ko /usr/src/hw3-cse506g23/CSE-506/dma_device/sys_dmadevice.o /usr/src/hw3-cse506g23/CSE-506/dma_device/sys_dmadevice.mod.o ;  true

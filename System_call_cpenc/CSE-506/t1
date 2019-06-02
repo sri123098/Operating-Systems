@@ -1,0 +1,10 @@
+MD5_DIGEST_LENGTH 16Flags which are set in this pflag, cflag, eflag, dflag 0 1 0 0
+Input file input, Output file i, Password (null) , Flags p flag 0, c flag 1, e flag 0, d flag 0 and C flag 0
+Checking whether the file is regular or not
+Input File is Regular.Checking for the access permissions
+Read access is available for input file 
+Checking whether the file is regular or not
+You can overwrite the existing output file
+ae2b1fca515949e5d54fb22b8ed95575Input input and Output i Password ®+ÊQYIåÕO²+ŽÙUuusage: %s -p password -[c|e|d] input_fname output_fname 
+ Kernel_flag 4 length 16 
+syscall returned -1 (errno=22)

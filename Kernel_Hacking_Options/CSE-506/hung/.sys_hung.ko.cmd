@@ -1,0 +1,1 @@
+cmd_/usr/src/hw3-cse506g23/CSE-506/hung/sys_hung.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /usr/src/hw3-cse506g23/CSE-506/hung/sys_hung.ko /usr/src/hw3-cse506g23/CSE-506/hung/sys_hung.o /usr/src/hw3-cse506g23/CSE-506/hung/sys_hung.mod.o ;  true

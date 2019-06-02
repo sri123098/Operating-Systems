@@ -1,0 +1,433 @@
+		CSE-506 (Spring 2019) Homework Assignment #2
+		  (100 points, 17% of your overall grade)
+			   Version 4 (3/15/2019)
+		      Due Saturday 4/13/2019 @ 11:59pm
+
+******************************************************************************
+* PURPOSE:
+
+To become familiar with the VFS layer of Linux, and especially with
+extensible file systems APIs.  To build a useful file system using stacking
+technologies.
+
+You will use the "wrapfs" stackable file system as a starting point for this
+assignment.  You will modify wrapfs to add "backup file system" (bkpfs)
+support.
+
+******************************************************************************
+* TEAMING:
+
+For HW2, you must work alone.
+
+Note that being the second homework assignment in the class, it is on
+purpose made a bit more open ended.  Not every little detail would be given
+to you as in HW1.  Your goal would be to follow the spec below, but to also
+think about how to address all sorts of corner cases that I do not
+specifically list below.  You will have more freedom here to design a
+suitable system and implement it.  As you will find out here and later in
+your career, many design decisions boil down to some tradeoff among multiple
+dimensions: you have to pick a good point on this multi-dimensional
+continuum, and justify it.  As time goes by this semester, I expect all of
+you to demonstrate an increased level of maturity and expertise in this
+class.  Be sure to document everything you do that's not explicitly stated
+in this document, in your README, and justify your decisions
+
+******************************************************************************
+* RESOURCES
+
+For this assignment, the following resources would be handy.  Study them
+well.
+
+(a) The Linux kernel source code, obviously.  Pay special attention to the
+    Documentation/ subdirectory, esp. files related to locking,
+    filesystems/*.txt, vfs.txt, and others.  There's a lot of good stuff
+    there, which you'd have to find and read carefully.
+
+(b) The Wrapfs kernel sources in your hw2-USER git repository that each of
+    you have, under fs/wrapfs.  Please use the "cse506" branch which is
+    branched off of the 'wrapfs' (to avoid problems, don't make new
+    branches).  Note also the file Documentation/filesystems/wrapfs.txt.
+    This Wrapfs file system is under 2,000 LoC, and hence is easier to study
+    in its entirety.
+
+(c) Assorted papers related to stackable file systems which were published
+    here:
+
+	http://www.fsl.cs.sunysb.edu/project-fist.html
+
+    Especially useful would be the following:
+
+	"Versionfs: A Versatile and User-Oriented Versioning File System"
+	"Tracefs: A File System to Trace Them All"
+	"A Stackable File System Interface for Linux"
+	"Extending File Systems Using Stackable Templates"
+	"FiST: A Language for Stackable File Systems"
+	"On Incremental File System Development"
+	"UnionFS: User- and Community-oriented Development of a Unification Filesystem"
+	"Versatility and Unix Semantics in Namespace Unification"
+	"I3FS: An In-Kernel Integrity Checker and Intrusion Detection File System"
+
+(d) Browsable GIT-Web sources here, especially wrapfs-4.20:
+
+	http://git.fsl.cs.sunysb.edu/?p=wrapfs-4.20.y.git;a=summary
+
+	Look at source code for other file systems.  The in-kernel stackable
+	file system eCryptfs may be very helpful.
+
+******************************************************************************
+* INTRODUCTION:
+
+In a stackable file system, each VFS-based object in the stackable file
+system (e.g., in Wrapfs) has a link to one other object in the lower file
+system (sometimes called the "hidden" object).  We identify this
+symbolically as X->X' where "X" is an object in the upper layer, and X' is
+an object in the lower layer.  This form of stacking is a single-layer
+linear stacking.
+
+******************************************************************************
+* DETAILS (KERNEL CODE):
+
+When you modify a file in traditional Unix file systems, there's no way to
+undo or recover a previous version of that file.  There's also no way to get
+older versions of the same file.  Being able to access a history of versions
+of file changes is very useful, to recover lost or inadvertent changes.
+Your task would be to create a file system that automatically creates backup
+versions of files, and also allows you to view versions as well as recover
+them.  This Backup File System (bkpfs) will have to handle several tasks via
+policies that you will have to design, justify your design, implement, and
+test: backup, version access, and retention policies.
+
+----------------------------------------------------------------------
+1. When to backup?
+
+Here are some choices for you to consider: you can decide to create a backup
+when a file is opened for writing, or when it is actually written to.  An
+alternative could be to create a backup every N writes to a file, or after B
+bytes are modified in a file; or any combination of these and other policies
+as you see fit to justify.
+
+----------------------------------------------------------------------
+2. What to backup?
+
+For simplicity, back up only regular files.
+
+----------------------------------------------------------------------
+3. Where to store backups?
+
+For a given file F, you can imagine having N older versions of the file:
+F.1, F.2, F.3, ..., F.N (you can decide whether F.1 is the oldest or latest
+backup).  You can come up with any naming scheme for the older file backups:
+different policies will make it easier/harder to achieve certain
+functionalities.  Examples include, for each file F, the i-th backup can be
+called:
+
+(3a) .F.i (aka hidden "dot" files)
+(3b) .i.F
+(3c) .bkp.F/i (i.e., a hidden per-file dir containing the N backups)
+(3d) other naming scheme you deem suitable (explain why)
+
+----------------------------------------------------------------------
+4. How to backup?
+
+To create a backup of file X and name it Y, use similar code from the first
+homework assignment to copy files in the kernel.  To increase efficiency,
+look into "splice" methods to make rapid data copies inside the kernel.
+
+----------------------------------------------------------------------
+5. Visibility policy
+
+Backup versions of files should not be visible or accessible by default.  It
+would confuse users if /bin/ls shows a lot of "extra" files.  And it defeats
+the purpose of being able to control those versions (see below) if a user
+can easily manipulate the versions or even delete them too easily.
+
+Therefore you'll have to consider how to change one or more ops like
+->lookup, ->readdir, ->filldir, so that users can't just view version files,
+and can't easily delete/change them.  You should carefully consider bkpfs's
+interaction with the dcache/icache here.
+
+----------------------------------------------------------------------
+6. Retention policy
+
+A file should have a maximum of N backups available.  That means if you need
+to create another backup, say N+1, you'd have to delete one of the existing
+backup files to make room for the new one.  You should keep the last N most
+recent backups, and delete the oldest one(s).  You should figure out how to
+keep N backups around, what their names should be, and how/if you need to
+rename some backup files when you delete the Nth backup to make room
+
+----------------------------------------------------------------------
+7. Version management
+
+You need to support several functions:
+
+(7a) List all versions of a file.  This would be a special flavor of
+"readdir".  Depending on how/where you write your version files, this can be
+easier or harder.  This may be achieved with some modified variant of
+->readdir/->filldir, or an ->ioctl.
+
+(7b) Delete newest, oldest, or all versions
+
+Support a way to delete the newest, oldest, or all versions.  This can be
+achieved using special ->ioctls, or perhaps some variant of ->unlink or
+->rmdir.
+
+(7c) View file version V, newest, or oldest
+
+Support a mechanism to view the contents of any of the version files, in
+read-only mode (disallow any changes to the version files).  This is useful
+for users to inspect an older version of a file to see if they want to, say,
+recover it.
+
+(7d) Restore newest version, oldest, or any version V
+
+Support a way to restore (recover) the latest or oldest version file
+created, or any specific one.  Restoring may overwrite the main file F, or
+maybe create a special file F' that can be inspected, deleted, or copied
+over the main file F.
+
+******************************************************************************
+* Implementation Details
+
+You can use wrapfs as your base file system.  Your git repo has 3 branches:
+"master" is unmodified Linux 4.20 kernel; "wrapfs" is one with a working
+wrapfs stackable file system; and "cse506" is a clone branch of wrapfs.  Do
+all your work in the "cse506" branch (avoid creating any more branches to
+simplify grading and committing/pushing code).  You can always compare what
+changes you made to your branch with
+
+$ git diff wrapfs cse506
+
+There's two ways you can develop bkpfs.  One way is to modify the wrapfs
+code directly and rename the file system as "bkpfs".  A second way is to
+copy the entire fs/wrapfs tree as fs/bkpfs and rename symbols/names inside
+from wrapfs to bkpfs (you can use clever sed(1) commands for that).  The
+latter approach has the advantage that you still have an unmodified
+fs/wrapfs source tree to inspect, test, and compare to your developing bkpfs
+code.
+
+Next, there are a number of things you'll need to track, some of which may
+be hard-coded, some configurable at run time, some provided at mount time,
+etc.  Examples include the number of versions to keep, the name or number of
+the oldest vs. newest backup version, and more.  You can select any
+reasonable mechanism to control these parameters: ACLs, extended attributes,
+control files in /proc or /sys, mount options to bkpfs, bkpfs ->ioctl's,
+or even store extra data in custom files you create yourself.  Many choices
+are possible, and often the choice trades-off one property for another
+(e.g., simpler kernel coding vs. easy of use for users).
+
+For this assignment, it would be *critical* that you document your design
+carefully in a plaintext README file!
+
+******************************************************************************
+* Mounting bkpfs
+
+Mounting bkpfs can be done as follows:
+
+# mount -t bkpfs /some/lower/path /mnt/bkpfs
+
+or, with mount options supported,
+
+# mount -t bkpfs -o maxver=7 /mnt/bkpfs
+
+(Note that you may need to first run "insmod ./fs/bkpfs/bkpfs.ko" to insert
+the new bkpfs module; of course, you'll need to remove an older one that's
+already loaded, if any.)
+
+After mounting, you should be able to "cd" to /mnt/bkpfs and issue normal
+file system commands.  Those commands will cause the VFS to call methods in
+bkpfs.  You can stick printk lines in bkpfs to see what gets called and
+when.  Your actions in /mnt/bkpfs will invoke bkpfs file system methods,
+which you will indirectly create and manage files' versions.
+
+******************************************************************************
+* USER CODE AND TESTING:
+
+You will need to write some user level code to issue ioctls or other
+commands to bkpfs: to view versions, recover, etc.  Usage of the program is:
+
+$ ./bkpctl -[ld:v:r:] FILE
+
+FILE: the file's name to operate on
+-l: option to "list versions"
+-d ARG: option to "delete" versions; ARG can be "newest", "oldest", or "all"
+-v ARG: option to "view" contents of versions (ARG: "newest", "oldest", or N)
+-r ARG: option to "restore" file (ARG: "newest" or N)
+	(where N is a number such as 1, 2, 3, ...)
+
+You will be required to write a series of small shell scripts to exercise
+EACH feature of your bkpfs, demonstrating successful as well as error
+conditions, as well as any corner cases.  I would expect to see at least
+scripts to show how versions are created/retained when files are modified;
+scripts to exercise every flag, argument, and combinations to the bkpctl
+program; and scripts to demonstrate features such as version file
+[in]visibility.  Put all test scripts inside the CSE-506 subdir of your git
+repository.
+
+
+******************************************************************************
+* GIT REPOSITORY
+
+For this assignment, we've created clean GIT kernel repositories for each of
+you.  Do not use the one from HW1 for this second assignment; but you can
+copy a good .config you've had in HW1 and use that for your HW2 kernel.  You
+can clone your new GIT repo as follows, using similar instructions as in
+HW1:
+
+# git clone ssh://USER@scm.cs.stonybrook.edu:130/scm/cse506git-s19/hw2-USER
+
+Note that if you don't have enough disk space on your VM, it'll be a good
+idea to remove the older hw1-USER repo to make space.  And while you're at
+it, also remove and old and unnecessary snapshots in your VM.
+
+If you want, you can use my kernel config as a starting point, and adapt it
+as needed:
+
+http://www3.cs.stonybrook.edu/~ezk/cse506-s19/cse506-s19-kernel.config
+
+******************************************************************************
+* STYLE AND MORE:
+
+Aside from testing the proper functionality of your code, we will also
+carefully evaluate the quality of your code.  Be sure to use a consistent
+style, well documented, and break your code into separate functions and/or
+source files as it makes sense.
+
+To be sure your code is very clean, it should compile with "gcc -Wall
+-Werror" without any errors or warnings!  We'll deduct points for any
+warning that we feel should be easy to fix.
+
+Read Documentation/process/coding-style.rst to understand which coding style
+is preferred in the kernel and stick to it for this assignment.  Run your
+kernel code through the syntax checker in scripts/checkpatch.pl (with the
+"strict" option turned on), and fix every warning that comes up.  Cleaner
+code tends to be less buggy.
+
+If the various sources you use require common definitions, then do not
+duplicate the definitions.  Make use of C's code-sharing facilities such as
+common header files.
+
+You must include a README file with this and any assignment: it is a
+critical part of *this* assignment.  The README file should describe what
+you did, what approach you took, design decisions and trade-offs, results of
+any measurements you might have made, which files are included in your
+submission and what they are for, etc.
+
+Remember that while the code must all be yours, if you consulted any online
+resources, you MUST clearly list them in detail (e.g., exactly where and
+what) in your README and your code.  Feel free to include any other
+information you think is helpful to us in this README; it can only help your
+grade (esp. for Extra Credit).
+
+******************************************************************************
+* SUBMISSION
+
+You will need to submit all of your sources, headers, scripts, Makefiles,
+and README.  Do not commit regenerable files like binaries or temporary
+files like "#" and "~" files.  Submit all of your files using GIT.  See
+general GIT submission guidelines on the class Web site.  Be sure to commit
+any branch you have as described above AND push those changes.
+
+To submit new files (user-level code, test shell scripts, etc.), put them
+under the directory named "CSE-506" (in branch named "cse506") inside the
+hw2-<user> directory that you checked out.  Remember to git add, commit, and
+push this new directory and any new files therein.  Put all new files that
+you add in this directory.  This may include user space program (.c and .h
+files), README, kernel files (if any), Makefile, or anything else you deem
+appropriate.
+
+For existing kernel source to which you make modification, use git add,
+commit, and push as mentioned on the class web site.
+
+There must be a Makefile in CSE-506/ directory.  Doing a "make" in CSE-506/
+should accomplish the following: Compile user space program to produce an
+executable by the name "./bkpctl".  This will be used to test your system
+call.
+
+(Use gcc -Wall -Werror in makefile commands.  We will anyway add them if you
+don't :-)
+
+Just to give you an idea how we will grade your submission: We will check
+out your git repository.  We will use the aforementioned kernel .config file
+to compile and then install your kernel.  We will then do a make in CSE-506/
+subdirectory.  We will insmod your bkpfs.ko, mount bkpfs, and start testing
+using your test scripts (and some that we will develop too).
+
+PLEASE test your submission before submitting it, by doing a dry run of
+above steps.  DO NOT make the common mistake of writing code until the very
+last minute, and then trying to figure out how to use GIT and skipping the
+testing of what you submitted.  You will lose valuable points if you do not
+get to submit on time or if you submission is incomplete!
+
+Make sure that you follow above submission guidelines strictly.  In
+particular, do a separate git clone of your committed code to ensure that
+you pushed everything you needed and no more.  We *will* deduct points for
+not following this instructions precisely.
+
+******************************************************************************
+* EXTRA CREDIT (OPTIONAL, 20+ pts, plus bug fixes)
+
+If you do any of the extra credit work, then your EC code must be wrapped in
+
+	#ifdef EXTRA_CREDIT
+		// EC code here
+	#else
+		// base assignment code here
+	#endif
+
+A. [10 pts] space based retention policy
+
+Implement a retention policy that keeps a number of backups based on the
+total size consumed by the backups.  For example, you can say that all
+backups should take no more than 1MB of space.  That means if you can keep
+only two 500KB backups, or one-hundred(!) 10KB backup files.  You may want
+to combine space-based retention policy with max-number based policy as
+discussed in part 6 of the main assignment.
+
+B. [10 pts] capture meta-data file changes
+
+The main assignment asks you to capture a new version based on modifications
+to the file's contents.  Here, add support to capture changes to the file's
+meta-data, specifically when ->setattr is called on the file.  This may be
+trickier for some m-d changes (e.g., think about chown(2) and permissions of
+your versioned files).
+
+C. [up to 10 pts] wrapfs bug fixes (optional)
+
+If you find and fix true bugs in wrapfs in 4.20, you may receive special
+extra credit, depending on the severity of the bug and the quality of the
+fix.
+
+D. [5 points]
+
+Extra credit at grader's discretion, up to 5 pts, for any particularly
+clever solutions/enhancements, or for extra, very nice test scripts.  Be
+sure to document anything extra you did in your README so the graders notice
+it.
+
+E. [5 points]
+
+Anyone submitting by Thursday, April 11, @ 11:59pm, will get an automatic 5
+EC points (but you must not submit anything past this deadline).
+
+Good luck.
+
+******************************************************************************
+* Copyright Statement
+
+(c) 2019 Erez Zadok
+(c) Stony Brook University
+
+DO NOT POST ANY PART OF THIS ASSIGNMENT OR MATERIALS FROM THIS COURSE ONLINE
+IN ANY PUBLIC FORUM, WEB SITE, BLOG, ETC.  DO NOT POST ANY OF YOUR CODE,
+SOLUTIONS, NOTES, ETC.  DOING SO COULD AFFECT YOUR GRADE AND/OR DEGREE EVEN
+AFTER GRADUATION!
+
+******************************************************************************
+* ChangeLog: a list of changes that this description had
+
+v1: original version
+v2: reviewed by TAs
+v3: further review by TAs.
+v4: minor tweaks to 7d
+v5: deadline extension

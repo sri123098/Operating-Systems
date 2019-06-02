@@ -1,0 +1,34 @@
+[  270.035165] sys_softlockup: loading out-of-tree module taints kernel.
+[  270.036079] installed softlockup module!
+[  300.406483] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! [user_softlockup:4920]
+[  300.406793] Modules linked in: sys_softlockup(O) sg sr_mod cdrom sd_mod crc32c_intel floppy ata_generic pata_acpi mptspi scsi_transport_spi mptscsih mptbase ata_piix libata autofs4
+[  300.406811] irq event stamp: 111912
+[  300.406820] hardirqs last  enabled at (111911): [<ffffffff8bc01944>] trace_hardirqs_on_thunk+0x1a/0x1c
+[  300.406824] hardirqs last disabled at (111912): [<ffffffff8bc01960>] trace_hardirqs_off_thunk+0x1a/0x1c
+[  300.406831] softirqs last  enabled at (77964): [<ffffffff8c6002a6>] __do_softirq+0x2a6/0x3de
+[  300.406837] softirqs last disabled at (77957): [<ffffffff8bc6b8ad>] irq_exit+0xdd/0xf0
+[  300.406842] CPU: 0 PID: 4920 Comm: user_softlockup Tainted: G           O      4.20.6+ #31
+[  300.406844] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/21/2015
+[  300.406851] RIP: 0010:softlockup+0xe/0x1d [sys_softlockup]
+[  300.406870] Code: Bad RIP value.
+[  300.406873] RSP: 0018:ffffa609808f3ee0 EFLAGS: 00000287 ORIG_RAX: ffffffffffffff13
+[  300.406877] RAX: 000000010000000c RBX: 0000000000000152 RCX: 0000000000000001
+[  300.406879] RDX: 00000001000087e1 RSI: 0000000000000001 RDI: 00007ffc8c33dec0
+[  300.406882] RBP: ffffa609808f3f58 R08: 0000000000000000 R09: 0000000000000000
+[  300.406884] R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000000
+[  300.406886] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+[  300.406921] FS:  00007fcbdf1db740(0000) GS:ffff90863ba00000(0000) knlGS:0000000000000000
+[  300.406934] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  300.406936] CR2: ffffffffc015bfe4 CR3: 0000000136f64004 CR4: 00000000000606f0
+[  300.406971] Call Trace:
+[  300.406977]  do_syscall_64+0x80/0x465
+[  300.406980]  ? trace_hardirqs_off_thunk+0x1a/0x1c
+[  300.406984]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+[  300.406987] RIP: 0033:0x7fcbdecef1c9
+[  300.406991] Code: 01 00 48 81 c4 80 00 00 00 e9 f1 fe ff ff 0f 1f 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 97 dc 2c 00 f7 d8 64 89 01 48
+[  300.406994] RSP: 002b:00007ffc8c33dea8 EFLAGS: 00000202 ORIG_RAX: 0000000000000152
+[  300.406997] RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007fcbdecef1c9
+[  300.406999] RDX: 0000000000400640 RSI: 00007ffc8c33dfd8 RDI: 00007ffc8c33dec0
+[  300.407002] RBP: 00007ffc8c33dee0 R08: 0000000000000000 R09: 00007ffc8c33dfc8
+[  300.407004] R10: 00007fcbdefbee80 R11: 0000000000000202 R12: 00000000004004d0
+[  300.407006] R13: 00007ffc8c33dfc0 R14: 0000000000000000 R15: 0000000000000000

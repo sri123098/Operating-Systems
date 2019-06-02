@@ -1,0 +1,15 @@
+
+Steps followed:
+Passing the arguments as strings using shared structure
+Updating the kmalloc for the pointers in kernel and ensuring that there are no dangling pointers.
+Checking whether the output file is created or not
+
+Checking whether the file is created with the proper permissions I have set the permissions to 644 and the output is of permissions 644
+Permissions of the file got updated as well after removing from OWRONLY.
+Need to check the umask stuff for 777
+I can run a shell script by using sed and running and executing.
+
+
+
+When the input file is not available, its entering into panic mode.
+It should return some error. what is that error value ? ENOENT 2 No such file or directory 

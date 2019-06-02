@@ -1,0 +1,1 @@
+cmd_/usr/src/hw3-cse506g23/CSE-506/mutex/sys_mutex.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds  --build-id  -o /usr/src/hw3-cse506g23/CSE-506/mutex/sys_mutex.ko /usr/src/hw3-cse506g23/CSE-506/mutex/sys_mutex.o /usr/src/hw3-cse506g23/CSE-506/mutex/sys_mutex.mod.o ;  true

@@ -1,0 +1,218 @@
+		CSE-506 (Spring 2019) Homework Assignment #3
+		  (100 points, 17% of your overall grade)
+			   Version 3 (4/18/2018)
+		       Due Sunday 5/12/2018 @ 11:59pm
+
+* PURPOSE:
+
+Put together much of the knowledge gained in this course, and develop code
+to demonstrate several kernel bugs and how they are caught by the Linux
+"kernel hacking" infrastructure.  (Note: there's an option to propose your
+own project.)
+
+* DEMOS:
+
+To expedite grading, and also allow you to show off your work, we'll have
+short demos (30-45 min) per group (or for individuals who work alone).  More
+info TBA.
+
+* TEAMING:
+
+For HW3, you may work alone or in groups up to four people.  Regardless of
+your group size, you will be graded the same, but at the end of the course,
+I take group sizes into account when assigning final course grades.  See my
+grading policy online for details.
+
+If you work in a team, you MUST fill out the following form by Sunday,
+4/21/2019:
+
+https://docs.google.com/forms/d/e/1FAIpQLSee5ZW_zQ0mTfxXZF1ojMAuQeXN70exkYQQZV9sK5PpSie2Rg/viewform?c=0&w=1
+
+This is a Google form for you to select the CS ID of your team members (your
+CS ID is often the same as you SBU NetID).  You only need to fill out the
+form if you work in a team (2-4 people): if you work alone, no need to fill
+the form.  You will need to login to Google Forms with your CS ID to be able
+to fill out the form.  Be sure to list the correct CS ID.
+
+I will create a shared GIT repo for each team, so you will NOT be using your
+individual GIT repos.  You must fill out the form by the deadline stated
+above: afterwards, I would not allow new teams to form or existing teams to
+split or change.
+
+CHOOSE YOUR TEAM MEMBERS CAREFULLY.  I will not accept later complaints
+about team members who "drop out" or don't contribute as much, or worse
+(cheating).  That said, it is ok to borrow code from your homeworks 1 or 2
+for this assignment, as long as you properly document it in your README.
+
+Note that being the third homework assignment in the class, it is on purpose
+made more open ended than the previous assignments.  I would expect you to
+demonstrate maturity, and come up with a clever design that you will
+describe in detail.  You have more freedom in this assignment to come up
+with your own design and justify it.  Recall that as time goes by this
+semester, I expect all of you to demonstrate an increased level of maturity
+and expertise in this class.  This is your chance to shine and show off what
+you've learned so far in this class.
+
+* PROJECT DESCRIPTION:
+
+The Linux "kernel hacking" section lists several dozen configuration options
+that help you catch various bugs.  Select ten (10) such configuration
+options and enable them in your kernel (if it helps your work, you can
+enable just the relevant features and install multiple kernels in your VMs).
+For each such configuration option, write kernel code to demonstrate how the
+kernel hacking option catches and reports the bugs(s).  Yes, this assignment
+asks you to write BUGGY code (but don't assume it's easier to write bad
+code).  You can write the code as a standalone module (preferably one module
+per demonstrated bug), or integrate it into the kernel, but in such a way
+that you can easily trigger the code for bug 1, bug 2, etc.  Note that I'd
+like you to get to the essence of the bug with as few lines of code as
+possible, so don't write too much code if the same bug can be demonstrated
+with fewer lines of code (but you can have as many printk's as you'd like).
+
+You can select any 10 configuration options with the following restrictions.
+
+First, the kernel hacking features you pick should be those that dynamically
+(e.g., at kernel runtime) detect the bug, not merely informational and/or
+statistical features.
+
+Second, try to select features from different "classes" of bugs (e.g., avoid
+selecting all your 10 cases from the "lock debugging" section).
+
+Third, we will judge your HW3 by how difficult the bug is to trigger and how
+your code demonstrates the bug most effectively and cleanly.
+
+Fourth, if many students/teams pick the same kernel hacking options, then
+we'll have a large base of examples to compare to, and the best ones will
+likely get a better grade; if, on the other hand, you'd select more
+challenging/obscure features, and few people pick that, then we won't have
+many others to compare to (read: your grade will probably be better).
+
+* CUSTOM PROJECTS:
+
+If you'd like, you can propose your own project, as long as it is OS related
+and is as substantial as one of this class's assignments.  Such projects
+could be related to any research projects you're involved in already, as
+long as you don't just present the same work done in your lab or another
+class.  To propose your own project, first email me your ideas by 4/21, and
+let's discuss it by email first.  I may ask you to meet me in person to
+discuss more details of the project.  You will then have one week to submit
+a 1-2 page mini-design document that describes what your project's goals
+are, what you hope to demonstrate, etc.  Be careful not to propose overly
+ambitious projects, as we only have 3-4 weeks for this HW3.
+
+******************************************************************************
+* GIT REPOSITORY
+
+For this assignment, we've created clean GIT kernel repositories for each of
+you.  Do not use the one from HW1 for this second assignment; but you can
+copy a good .config you've had in a previous assignment and use that for
+this homework's kernel.  You can clone your new GIT repo as follows, using
+similar instructions as in HW1:
+
+# git clone ssh://USER@scm.cs.stonybrook.edu:130/scm/cse506git-s19/hw3-USER
+
+Note that if you don't have enough disk space on your VM, it'll be a good
+idea to remove the older repos to make space.  And while you're at
+it, also remove and old and unnecessary snapshots in your VM.
+
+If you want, you can use my kernel config as a starting point, and adapt it
+as needed:
+
+http://www3.cs.stonybrook.edu/~ezk/cse506-s19/cse506-s19-kernel.config
+
+******************************************************************************
+* STYLE AND MORE:
+
+Aside from testing the proper functionality of your code, we will also
+carefully evaluate the quality of your code.  Be sure to use a consistent
+style, well documented, and break your code into separate functions and/or
+source files as it makes sense.
+
+To be sure your code is very clean, it should compile with "gcc -Wall
+-Werror" without any errors or warnings!  We'll deduct points for any
+warning that we feel should be easy to fix.
+
+Read Documentation/process/coding-style.rst to understand which coding style
+is preferred in the kernel and stick to it for this assignment.  Run your
+kernel code through the syntax checker in scripts/checkpatch.pl (with the
+"strict" option turned on), and fix every warning that comes up.  Cleaner
+code tends to be less buggy.
+
+If the various sources you use require common definitions, then do not
+duplicate the definitions.  Make use of C's code-sharing facilities such as
+common header files.
+
+Remember that while the code must all be yours, if you consulted any online
+resources, you MUST clearly list them in detail (e.g., exactly where and
+what) in your README and your code.  Feel free to include any other
+information you think is helpful to us in this README; it can only help your
+grade (esp. for Extra Credit).
+
+******************************************************************************
+* SUBMISSION
+
+You will need to submit all of your sources, headers, scripts, Makefiles,
+and README.  Do not commit regenerable files like binaries or temporary
+files like "#" and "~" files.  Submit all of your files using GIT.  See
+general GIT submission guidelines on the class Web site.  Be sure to commit
+any branch you have as described above AND push those changes.
+
+To submit new files (user-level code, test shell scripts, etc.), put them
+under the directory named "CSE-506" (in branch named "cse506") inside the
+hw3-<user> repository (or team repository) that you checked out.  Remember
+to git add, commit, and push this new directory and any new files therein.
+Put all new files that you add in this directory.  This may include user
+space program (.c and .h files), README, kernel files (if any), Makefile, or
+anything else you deem appropriate.
+
+For existing kernel source to which you make modification, use git add,
+commit, and push as mentioned on the class web site.
+
+There must be a Makefile in CSE-506/ directory.  Doing a "make" in CSE-506/
+should accomplish the following: Compile any  user space programs needed to
+trigger the bugs you're demonstrating.  Recall you'd need to demo this HW3,
+to make it easier for us to grade and for you to demo your code.
+
+PLEASE test your submission before submitting it, by doing a dry run of
+above steps.  DO NOT make the common mistake of writing code until the very
+last minute, and then trying to figure out how to use GIT and skipping the
+testing of what you submitted.  You will lose valuable points if you do not
+get to submit on time or if you submission is incomplete!
+
+Please include a README file that briefly describes how you handled/designed
+the code to demonstrate each of the bugs.  Also explain WHAT each of these
+bugs are supposed to catch.
+
+Make sure that you follow above submission guidelines strictly.  In
+particular, do a separate git clone of your committed code to ensure that
+you pushed everything you needed and no more.  We *will* deduct points for
+not following this instructions precisely.
+
+* EXTRA CREDIT (OPTIONAL, MAX 20 pts)
+
+There's no explicit extra credit for this assignment.  However, you may
+select up to two more kernel hacking features to demonstrate, above the 10
+you're supposed to do (10 pts for each extra feature).  When we grade
+(and/or demo) your code, we may also decide to give special credit for
+clever designs, neat features, exceptionally clean code, etc.  Be sure to
+document any special things you've done.  In other words, impress us!
+
+Good luck.
+
+******************************************************************************
+* Copyright Statement
+
+(c) 2019 Erez Zadok
+(c) Stony Brook University
+
+DO NOT POST ANY PART OF THIS ASSIGNMENT OR MATERIALS FROM THIS COURSE ONLINE
+IN ANY PUBLIC FORUM, WEB SITE, BLOG, ETC.  DO NOT POST ANY OF YOUR CODE,
+SOLUTIONS, NOTES, ETC.  DOING SO COULD AFFECT YOUR GRADE AND/OR DEGREE EVEN
+AFTER GRADUATION!
+
+******************************************************************************
+* ChangeLog: a list of changes that this description had
+
+v1: original version
+v2: reviewed by TAs
+v3: minor typos fixed

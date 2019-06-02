@@ -1,0 +1,200 @@
+#####################################
+########9. CONFIG_DEBUG_LIST#########
+#####################################
+Enable this to turn on extended checks  in the linked-list walking routines for
+example list_add, list_del functions.
+
+WHAT AND HOW IT GETS CORRUPTED?
+Considering the code for list_add function. The kernel code for this function is
+in linux/list.h and lib/list_debug.c. If this configuration is enabled special
+function __list_add_valid is called to check the validity of list. Otherwise
+__list_add_valid will return true in all the cases.
+
+if (CHECK_DATA_CORRUPTION(next == LIST_POISON1,
+                        "list_del corruption, %px->next is LIST_POISON1 (%px)\n",
+                        entry, LIST_POISON1))
+if (CHECK_DATA_CORRUPTION(next->prev != prev,
+                        "list_add corruption. next->prev should be prev (%px),
+                        but was %px. (next=%px).\n",
+                        prev, next->prev, next)
+These are the check which prints the corruption details in dmesg.
+
+HOW TO REPRODUCE?
+To reproduce the bug I have created a linked list and added a node to it. Then
+I deleted the same node. If I try to delete the same node twice it is an exploit
+attempt to delete the node which is not already deleted.
+
+The other way to corrupt linked list is to create a list with 3 nodes say
+                1<->2<->3
+Modify the list so that the next of 2 points to 1 and now try to insert a node
+between 2 and 3. This also corrupts the linked list.
+
+HOW TO RUN?
+A kernel module sys_linkedlist is created to reproduce this bug. Following are
+the steps to reproduce it.
+From folder /usr/src/hw3-CSE506g23/linkedlist run the following commands:
+
+sh install_modules.sh
+./user_linkedlist
+
+DMESG BEFORE AND AFTER ENABLING OPTION
+BEFORE
+If the option is not enabled it doesn't show clearly why the problem has occured. 
+It just shows that the linked list is corrupted.
+[  796.160442] installed linkedlist module!
+[  799.607029] Inside linkedlist_module
+[  799.607109] general protection fault: 0000 [#1] SMP PTI
+[  799.607444] CPU: 0 PID: 5984 Comm: user_linkedlist Tainted: G           OEL    
+4.20.6+ #3
+[  799.607708] Hardware name: VMware, Inc. VMware Virtual Platform/440BX 
+Desktop Reference Platform, BIOS 6.00 09/21/2015
+[  799.608044] RIP: 0010:corrupted_linkedlist+0x5a/0xa0 [sys_linkedlist]
+
+AFTER
+If the option is enabled it shows that the linked list is corrupted because of
+the deletion
+[  142.913975] sys_linkedlist: loading out-of-tree module taints kernel.
+[  142.915271] installed linkedlist module!
+[  147.315994] Inside linkedlist
+[  147.316005] ------------[ cut here ]------------
+[  147.316009] list_del corruption, ffff9d6ef2ef38e8->next is LIST_POISON1 (dea
+d000000000100)
+[  147.316089] WARNING: CPU: 1 PID: 5220 at lib/list_debug.c:47 __list_del_entr
+y_valid+0x50/0xa0
+[  147.316091] Modules linked in: sys_linkedlist(O) sg sr_mod cdrom sd_mod crc3
+2c_intel floppy ata_generic pata_acpi ata_piix mptspi scsi_transport_spi libata
+ mptscsih mptbase autofs4
+
+LOGS
+The full logs for this config are available at
+/usr/src/hw3-cse506g23/CSE-506/linkedlist/log
+#######################################
+######10. CONFIG_PROVE_LOCKING##########
+#######################################
+This feature enables the kernel to prove that all locking that occurs in the
+kernel runtime is mathematically correct: that under no circumstance could be 
+arbitrary combination of observed locking sequences cause a deadlock.
+
+HOW TO REPRODUCE?
+In this demo, I used two mutexes and two threads where the ordering of locking 
+is different in different threads. The locking pattern is as follows:
+Thread 1: Grabs lock on mutex 1 and then  sleeps for 5 seconds after which it 
+grabs lock on mutex 2. 
+Thread 2: Grabs lock on mutex 2 and then sleeps for 5 seconds after which it
+grabs lock on mutex 1. 
+But the thread 1 is holding lock on mutex 1 and thread 2 is holding lock on 
+mutex 2. So they will be waiting for each other for the other lock which causes
+the deadlock scenario.
+
+HOW TO RUN?
+A kernel module sys_mutex is created to reproduce the bug. Following are the
+steps to reproduce it. 
+From folder /usr/src/hw3-CSE506g23/mutex run the following commands:
+sh install_modules.sh
+./user_mutex
+
+DMESG BEFORE AND AFTER ENABLING OPTION
+BEFORE
+There will be no logs generated if the option is not enabled and the system will
+just hang as it reaches deadlock no thread can acquire the lock and move forward.
+AFTER
+If the option is enabled it shows a clear message that which thread held lock on 
+which mutex and shows the ordering of locking. This helps in understanding the 
+bug easily. 
+
+[  190.734663] ======================================================
+[  190.734809] WARNING: possible circular locking dependency detected
+[  190.734957] 4.20.6+ #1 Tainted: G           OE
+[  190.735076] ------------------------------------------------------
+[  190.735222] thread1/4924 is trying to acquire lock:
+[  190.735344] 000000003cdf0b8d (lock_2){+.+.}, at: thread_function1+0x34/0x70 
+[sys_mutex]
+[  190.735538]
+but task is already holding lock:
+[  190.735675] 000000000061f264 (lock_1){+.+.}, at: thread_function1+0xe/0x70
+[sys_mutex]
+[  190.735859]
+which lock already depends on the new lock.
+
+[  190.736038]
+the existing dependency chain (in reverse order) is:
+[  190.736205]
+-> #1 (lock_1){+.+.}:
+[  190.736426]        thread_function2+0x34/0x70 [sys_mutex]
+[  190.736619]        kthread+0xf3/0x130
+[  190.736730]        ret_from_fork+0x3a/0x50
+[  190.736843]
+-> #0 (lock_2){+.+.}:
+[  190.736975]        __mutex_lock+0x5c/0x830
+[  190.737088]        thread_function1+0x34/0x70 [sys_mutex]
+[  190.737226]        kthread+0xf3/0x130
+[  190.737331]        ret_from_fork+0x3a/0x50
+[  190.737442]
+other info that might help us debug this:
+
+[  190.737634]  Possible unsafe locking scenario:
+
+[  190.737783]        CPU0                    CPU1
+[  190.737902]        ----                    ----
+[  190.738021]   lock(lock_1);
+[  190.738109]                                lock(lock_2);
+[  190.738243]                                lock(lock_1);
+[  190.738377]   lock(lock_2);
+[  190.738464]
+ *** DEADLOCK ***
+
+LOGS
+The full logs for this config are available at
+/usr/src/hw3-cse506g23/CSE-506/mutex/log
+
+################################################
+######## 10. CONFIG_SOFTLOCKUP_DETECTOR #########
+################################################
+Softlockups are bugs that cause the kernel to loop in kernel mode for more than
+20 seconds, without giving other tasks a chance to run. The current stack trace
+is displayed upon detection and the system will stay locked up.
+
+WHAT AND HOW IT GETS CORRUPTED?
+The error on this comes from kernel/watchdog.c file from the following trace.
+pr_emerg("BUG: soft lockup - CPU#%d stuck for %us! [%s:%d]\n",
+			smp_processor_id(), duration,
+			current->comm, task_pid_nr(current));
+HOW TO REPRODUCE?
+Inorder to get this bug make the kernel loop in for more than 20sec. In this
+demo, I made the kernel loop for 40sec. The bug will be detected at ~23sec 
+because it is taking into considerating the run time of the user program as well.
+
+HOW TO RUN?
+A kernel module sys_softlockup is created to reproduce the bug. Following are 
+the steps to reproduce it.
+From folder /usr/src/hw3-CSE506g23/softlockup run the following commands:
+sh install_modules.sh
+./user_mutex
+
+DMESG BEFORE AND AFTER ENABLING OPTION
+BEFORE
+The program runs successfully for 40 seconds in my case and returns 0.
+AFTER
+If you run the syscall with the option enabled it gives the following dmesg
+[  270.035165] sys_softlockup: loading out-of-tree module taints kernel.
+[  270.036079] installed softlockup module!
+[  300.406483] watchdog: BUG: soft lockup - CPU#0 stuck for 22s! 
+[user_softlockup:4920]
+[  300.406793] Modules linked in: sys_softlockup(O) sg sr_mod cdrom sd_mod 
+crc32c_intel floppy ata_generic pata_acpi mptspi scsi_transport_spi mptscsih 
+mptbase ata_piix libata autofs4
+
+LOGS
+The full logs for this config are available at
+/usr/src/hw3-cse506g23/CSE-506/softlockup/log
+
+###################################
+########## REFERENCES ##############
+####################################
+[1] https://www.kernel.org/doc/html/latest/dev-tools/kmemleak.html
+[2] https://bugzilla.redhat.com/show_bug.cgi?id=1201179
+[3] https://github.com/torvalds/linux/blob/6f0d349d922ba44e4348a17a78ea51b7135965b1/drivers/misc/lkdtm/refcount.c
+[4] https://lore.kernel.org/patchwork/patch/687725/
+[5] https://en.wikipedia.org/wiki/High_memory
+[6] https://cateee.net/lkddb/web-lkddb/DEBUG_SG.html
+[7] https://github.com/torvalds/linux/blob/dce45af5c2e9e85f22578f2f8065f225f5d11764/include/linux/scatterlist.h

@@ -1,0 +1,218 @@
+-- CSE-506/README
++++ CSE-506/README
+@@ -1 +0,0 @@
+-XXX: fill in
+AUTHOR:SRIRAM KALLURI
+email id:skalluri@cs.stonybrook.edu
+########################
+HOME WORK ASSIGNMENT 1
+LOADABLE KERNEL MODULE FOR ENCRYPTION AND DECRYPTION
+#########################
+
+Built a kernel with config options of 1000.
+
+#########
+Files needed:
+/usr/src/hw1-skalluri/CSE-506/sys_cpenc.c
+/usr/src/hw1-skalluri/CSE-506/tcpenc.c
+/usr/src/hw1-skalluri/CSE-506/shared.h
+/usr/src/hw1-skalluri/CSE-506/test_scripts
+/usr/src/hw1-skalluri/CSE-506/test_scripts/final.sh
+/usr/src/hw1-skalluri/CSE-506/kernel.config
+/usr/src/hw1-skalluri/CSE-506/README.rej
+/usr/src/hw1-skalluri/CSE-506/Makefile
+/usr/src/hw1-skalluri/CSE-506/install_module.sh
+##########
+OPERATIONS
+##########
+As per the specifications, the operations are designed:
+[-d] file1 file2:perform the encryption of file1 to file2
+[-e] file1 file2:perform the decryption of file1 to file2
+[-c] file1 file2:perform the copy of file1 to file2
+[-p] password This is mandatory field for the encryption and decryption.
+[-h] help
+
+####################
+DESIGN OF SYSTEM CALL
+####################
+
+I have defined a common struct which can be shared between the userspace and kernel space and the arguments are
+communicated from the user to kernel through a pointer. 
+
+Shared structure in "shared.h" between the user & kernel 
+-------------------------------------------------------
+typedef struct {
+	char *input;
+	char *output;
+	char *password;
+	int length;
+	int flag;
+}myargs;
+
+Communication can be established between Kernel and User by this structure.
+#########
+USER LAND
+#########
+I have developed the program to pass various types of arguments. 
+Parsing different types of the parameters to the program. 
+Used getopt to parse the arguments.
+Support has been provided for the different way of parsing the arguments. 
+./xcpenc -p "password" -c input output
+./xcpenc -c input output
+./xcpenc -e input output -p "password"
+
+Since Linux Kernel community has imposed restriction on the number of the arguments to be passed to the system call, I
+have used the shared datastructure described above to establish communication between user and kernel with a pointer. 
+Through out this assignment, I have allocated for the address space pointed by the pointers in heap. 
+
+Ensuring the additional security checks before passing to kernel.
+I have implemented 4 functions in user land to validate the input file and output file. 
+Purpose of 4 functions i.e validate_input, validate_output, file_isreg, folder_isreg:
+Checking whether the input file is a regular file or not.
+------->If it is a regular file, can the user of the program has the READ permissions to access the file. 
+------->If it is not a regular file, returns an error.
+But the output file specified may be or may not be present. 
+------->If it is present, you can check the permissions of the
+outfile for WRITE access. 
+------->If not present, I have checked whether the folder exists or not. If not exists, it returns an error.
+------->If exists check for the WRITE permissions of the folder to create a file in that folder. This ensures double safety to verify the arguments before passing to the kernel space. 
+
+Apart from this, I have used MD5 hashing to hash the password. 
+Hashing the password at the user land helps in ensuring a additional layer of security as you are communicating the
+hashed password at the user land. 
+-----------------------------------------------------------------
+
+##########
+KERNEL LAND (sys_cpenc.c)
+###########
+Linux design principles have been followed. 
+Properly checking the arguments which are communicated from the user space. 
+BUF_SIZE 4096 is defined as the page size to read/write the data in chunks.
+Design is described below:
+Validated the arguments which are being passed from the user side & return -EINVAL on error. 
+Validated all the kmalloc allocated pointers and return -ENOMEM on error.
+Validated all the file pointers and getname struct filename pointers.
+Validated all the request handle, ivdata & hash_key.
+Through out the design, I'm very cautious about the usage of the data and properly allocated the space on heap to the
+pointers.
+###########
+check_inode:
+###########
+Validate the inode of the input and output.
+In my design, when ever an error occurs if the input is not the same as the output, I'm removing the output file with
+the proper utilisation of vfs_unlink. 
+###########
+set_uid_gid:
+###########
+Simple function by utilizing the current_id() function defined in kernel to properly set the uid and gid as
+the output file should be created with the user/group ownership of the
+running process, and its protection mode should NOT be less than the input
+file.To ensure the permissions, I have set the imode of output file to that i_mode of the input file for validate the permissions.
+#######
+copy_fs: 
+#######
+Judiciary use of kernel space. So used vfs_stat to get the size of the file with out defining long long variable and
+validated with fd_in->f_pos.
+It return true only when the data being read from the vfs_read is copied to the vfs_write ensuring all the necessary
+checks. 
+#########
+encrypt_fs:
+##########
+Additional security has been taken apart from MD5 hashed password. 
+Randomized ivdata has been set in the preamble of the output encrypt file to increase the safety of the encryted file
+Each iteration of encryption after reading the data BUF_SIZE, ivdata has been added to ensure additional safety. 
+Every time it encrypts, it uses a different ivdata and properly 
+ensured even at the decryption phase. 
+Preamble of the encrypted file is properly set to ensure security.
+Enhanced the Preamble to 32 bits to ensure that the more security by choosing the ivdata randomly every time and then
+storing that. 
+#########
+decrypt_fs:
+#########
+before starting the decryption, it validates the password with that of the preamble of the encrypted file.
+Every time it reads the block of the data, it will update the iv for the next block decryption and properly ensures the
+data.
+Apart from that, I have used kernel function copy_from_user to copy the arguments from the user land to the kernel land. getname and
+putname are used to allocate the memory for file input and output string. Other kernel functions which I have used are vfs_read, vfs_write, vfs_unlink, inode, current_uid/gid(),crypto_alloc_shash.
+------------------------------------------------------------
+
+
+###############
+EXTRA CREDIT
+##############
+
+[A] 4 points.
+Augment your module to utilize the Initialization Vector (IV) part of the
+xcpenc.  Without having to know much about the IV, it is useful to
+understand that setting it to a different value each time you encrypt or
+decrypt a chunk of bytes produces stronger encryption that is harder to
+break.
+
+#######
+DESIGN FOLLOWED
+#######
+Every time I encrypt a block of the data, I generate the random bytes of ivdata with the ivlength  parameter which can be passed by user ivlen parameter in system call. Since the ivdata generated is pretty much random bytes and no one can crack. During encryption, ivdata is written to the encrypted file for every chunk of the data which is processed in BUF_SIZE 4096. 
+While performing decryption, it will read the ivlen bytes for every iteration and uses that for decryption along with the hashed password. Multiple length ivlen is supported. 
+Since this is the most secure way to encrypt and decrypt the file, I have updated original encrypt_fs and decrypt_fs with this update and all the checks have been performed. 
+
+#####
+TEST CASES
+#####
+While installing the module, please check the below file as it is error/warning free.
+/usr/src/hw1-skalluri/CSE-506/log_file_install_module
+
+test01.sh->Test case for null argument. It prints the usage.
+test02.sh->Test case for single argument "-h". It prints the usage. I have designed the logic in getopt(3) such that if
+the length of the arguments are not matching. It prints the usage.
+test03.sh->Copy functionality for empty, small, medium and large files. Generated the random data for the files. 
+test04.sh->Testing encryption, decryption of a empty file, validates whether the encrypted file is different from the
+input. 
+test05.sh->Testing encryption and decryption of small, medium & large file. 
+test06.sh->Testing the encryption and then trying to decrypt the file with a wrong password. Returns -EACCESS -13 as the
+error. 
+test07.sh->Testing the length of the password atleast 6 characters. Prints the usage to enter the password of alteast 6
+characters to ensure safety.
+test08.sh->Arguments to the ./xcpenc --> 8 test cases for various types of the arguments. 
+test09.sh->Arguments to the ./xcpenc --> 3 more test cases to test the different way of parsing the parameters to the
+input. 
+test10.sh->Inode functionality check. Checks whether the input and output files are same and tells the user to pass the
+correct arguments. 
+test11.sh->Test case for symbolic links. 
+test12.sh-> Testcase for non existing file for encryption and decryption
+test13.sh ->checks if the input file is non existing and check     for the error number -ENOENT -2.
+
+vfs_unlink of the partial deleted file have been verified with manually making the program to fail and then tested for this and is working properly. Please verify check_vfs_unlink file for the log.
+Apart from this, I have created two users sri and John to test the access permissions for the files. 
+
+Please find the log for all the test cases in the below file.
+	/usr/src/hw1-skalluri/CSE-506/test_scripts/log_verification
+I have covered all the test cases as given in the spec.
+- missing arguments passed
+- null arguments
+- pointers to bad addresses
+- keylen and length of keybuf don't match
+- invalid flags or combinations of flags
+- input file cannot be opened or read
+- output file cannot be opened or written
+- input or output files are not regular, or they point to the same file
+- trying to decrypt a file w/ the wrong key
+#############
+References:
+############
+Kernel functions information
+https://elixir.bootlin.com/linux/v4.20.6/source/
+Hashing in Kernel level
+https://elixir.bootlin.com/linux/v4.20.6/source/security/keys/encrypted-keys/encrypted.c#L325
+Errors
+http://www-numi.fnal.gov/offline_software/srt_public_context/Web    Docs/Errors/unix_system_errors.html 
+Debugging 
+https://elinux.org/Debugging_by_printing
+Linux Journal
+https://www.linuxjournal.com/article/6930
+Crypto api example
+https://www.kernel.org/doc/html/v4.20/crypto/api-samples.html#code-example-for-symmetric-key-cipher-operation
+Stack over flow
+https://stackoverflow.com/questions/25518061/linux-filp-open-error-number-definitions/25518355
+https://stackoverflow.com/questions/2450845/what-does-this-error-mean-somefile-c200-error-the-frame-size-of-1032-bytes
+https://stackoverflow.com/questions/19598497/check-if-a-folder-is-writable
+https://stackoverflow.com/questions/24290273/check-if-input-file-is-a-valid-file-in-c

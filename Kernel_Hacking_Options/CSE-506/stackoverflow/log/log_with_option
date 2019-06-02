@@ -1,0 +1,173 @@
+[  405.356440] installed stackoverflow module!
+[  409.511235] The value of string is aravindreddyravula and num is 0
+[  409.511238] The value of string is aravindreddyravula and num is 1
+[  409.511239] The value of string is aravindreddyravula and num is 2
+[  409.511240] The value of string is aravindreddyravula and num is 3
+[  409.511241] The value of string is aravindreddyravula and num is 4
+[  409.511241] The value of string is aravindreddyravula and num is 5
+[  409.511242] The value of string is aravindreddyravula and num is 6
+[  409.511248] BUG: stack guard page was hit at 00000000639581c6 (stack is 00000000f3191cd3..00000000760a8c89)
+[  409.511534] kernel stack overflow (double-fault): 0000 [#1] SMP PTI
+[  409.511674] CPU: 0 PID: 5649 Comm: user_stackoverf Tainted: G           OE     4.20.6+ #8
+[  409.511841] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/21/2015
+[  409.512058] RIP: 0010:recursion+0x4d/0x80 [sys_stackoverflow]
+[  409.512185] Code: 8b 84 24 f8 07 00 00 65 48 33 04 25 28 00 00 00 75 37 48 81 c4 00 08 00 00 5b c3 48 89 e7 48 c7 c6 24 30 37 c0 b9 13 00 00 00 <f3> a4 89 da 48 89 e6 48 c7 c7 38 30 37 c0 31 c0 e8 77 aa 13 c5 8d
+[  409.512534] RSP: 0018:ffff9b03c00b7e60 EFLAGS: 00010287
+[  409.512652] RAX: 0000000000000000 RBX: 0000000000000007 RCX: 0000000000000013
+[  409.512801] RDX: 0000000000000000 RSI: ffffffffc0373024 RDI: ffff9b03c00b7e60
+[  409.512950] RBP: 000000000000015e R08: 0000000000000048 R09: 0000000000019178
+[  409.513137] R10: ffffffff8661f264 R11: 0000000000000412 R12: 0000000000000000
+[  409.513289] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+[  409.513623] FS:  00007f64c2435740(0000) GS:ffff908a3ba00000(0000) knlGS:0000000000000000
+[  409.513875] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  409.514050] CR2: ffff9b03c00b7e58 CR3: 00000001399ee005 CR4: 00000000000606f0
+[  409.514289] Call Trace:
+[  409.514427]  ? sched_clock+0x5/0x10
+[  409.514573]  ? sched_clock_cpu+0x11/0xa0
+[  409.514732]  ? log_store+0x114/0x200
+[  409.514869]  ? up+0xd/0x50
+[  409.514995]  ? down_trylock+0x20/0x30
+[  409.515120]  ? irq_work_queue+0x9/0x70
+[  409.515219]  ? wake_up_klogd+0x2b/0x30
+[  409.515318]  ? vprintk_emit+0x155/0x230
+[  409.515419]  ? printk+0x53/0x6a
+[  409.515510]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.515635]  ? sched_clock+0x5/0x10
+[  409.515730]  ? sched_clock_cpu+0x11/0xa0
+[  409.515833]  ? log_store+0x114/0x200
+[  409.515930]  ? up+0xd/0x50
+[  409.516012]  ? down_trylock+0x20/0x30
+[  409.516113]  ? irq_work_queue+0x9/0x70
+[  409.516213]  ? wake_up_klogd+0x2b/0x30
+[  409.516312]  ? vprintk_emit+0x155/0x230
+[  409.516413]  ? printk+0x53/0x6a
+[  409.516503]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.516629]  ? sched_clock+0x5/0x10
+[  409.516724]  ? sched_clock_cpu+0x11/0xa0
+[  409.516829]  ? log_store+0x114/0x200
+[  409.516925]  ? up+0xd/0x50
+[  409.517126]  ? down_trylock+0x20/0x30
+[  409.517285]  ? irq_work_queue+0x9/0x70
+[  409.517385]  ? wake_up_klogd+0x2b/0x30
+[  409.517484]  ? vprintk_emit+0x155/0x230
+[  409.517584]  ? printk+0x53/0x6a
+[  409.517673]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.517799]  ? sched_clock+0x5/0x10
+[  409.517893]  ? sched_clock_cpu+0x11/0xa0
+[  409.517994]  ? log_store+0x114/0x200
+[  409.518091]  ? up+0xd/0x50
+[  409.518173]  ? down_trylock+0x20/0x30
+[  409.518270]  ? irq_work_queue+0x9/0x70
+[  409.518369]  ? wake_up_klogd+0x2b/0x30
+[  409.518468]  ? vprintk_emit+0x155/0x230
+[  409.518568]  ? printk+0x53/0x6a
+[  409.518656]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.518782]  ? sched_clock+0x5/0x10
+[  409.518875]  ? sched_clock_cpu+0x11/0xa0
+[  409.518977]  ? log_store+0x114/0x200
+[  409.519092]  ? up+0xd/0x50
+[  409.519174]  ? down_trylock+0x20/0x30
+[  409.519272]  ? irq_work_queue+0x9/0x70
+[  409.519370]  ? wake_up_klogd+0x2b/0x30
+[  409.519470]  ? vprintk_emit+0x155/0x230
+[  409.519570]  ? printk+0x53/0x6a
+[  409.519659]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.519784]  ? sched_clock+0x5/0x10
+[  409.519879]  ? sched_clock_cpu+0x11/0xa0
+[  409.519980]  ? log_store+0x114/0x200
+[  409.520076]  ? up+0xd/0x50
+[  409.520157]  ? down_trylock+0x20/0x30
+[  409.520254]  ? irq_work_queue+0x9/0x70
+[  409.520352]  ? wake_up_klogd+0x2b/0x30
+[  409.520451]  ? vprintk_emit+0x155/0x230
+[  409.520551]  ? printk+0x53/0x6a
+[  409.520639]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.520764]  ? sched_clock+0x5/0x10
+[  409.520858]  ? sched_clock_cpu+0x11/0xa0
+[  409.520959]  ? log_store+0x114/0x200
+[  409.521055]  ? up+0xd/0x50
+[  409.521136]  ? down_trylock+0x20/0x30
+[  409.521234]  ? irq_work_queue+0x60/0x70
+[  409.521334]  ? wake_up_klogd+0x2b/0x30
+[  409.521433]  ? vprintk_emit+0x155/0x230
+[  409.521533]  ? printk+0x53/0x6a
+[  409.521697]  recursion+0x6a/0x80 [sys_stackoverflow]
+[  409.521821]  ? get_page_from_freelist+0x226/0xd20
+[  409.521937]  ? __alloc_pages_nodemask+0x124/0xf70
+[  409.522052]  ? __alloc_pages_nodemask+0x124/0xf70
+[  409.522168]  ? __alloc_pages_nodemask+0x124/0xf70
+[  409.522285]  ? xas_load+0x9/0x80
+[  409.522376]  ? find_get_entry+0x58/0x170
+[  409.522478]  ? pagecache_get_page+0x21/0x230
+[  409.522588]  ? mem_cgroup_commit_charge+0x4f/0xe0
+[  409.522704]  ? page_add_new_anon_rmap+0x3e/0x80
+[  409.522817]  ? alloc_set_pte+0x139/0x2a0
+[  409.522919]  ? finish_fault+0x35/0x60
+[  409.523036]  ? _cond_resched+0x10/0x20
+[  409.523136]  ? unmap_page_range+0x7be/0x8d0
+[  409.523244]  ? __rb_insert_augmented+0x147/0x1c0
+[  409.523358]  ? get_page_from_freelist+0x226/0xd20
+[  409.523473]  ? flush_tlb_func_common.isra.7+0xf7/0x230
+[  409.523596]  ? cpumask_any_but+0x27/0x40
+[  409.523698]  ? page_remove_rmap+0xce/0x1e0
+[  409.523803]  ? unmap_page_range+0x7be/0x8d0
+[  409.523909]  ? flush_tlb_func_common.isra.7+0xf7/0x230
+[  409.524031]  ? __alloc_pages_nodemask+0x124/0xf70
+[  409.524146]  ? release_pages+0x256/0x360
+[  409.524248]  ? page_add_file_rmap+0xa/0x140
+[  409.524354]  ? alloc_set_pte+0xcd/0x2a0
+[  409.524455]  ? mem_cgroup_commit_charge+0x4f/0xe0
+[  409.524570]  ? page_add_new_anon_rmap+0x3e/0x80
+[  409.524681]  ? __handle_mm_fault+0xa0d/0xbe0
+[  409.524789]  ? handle_mm_fault+0x116/0x1e0
+[  409.524894]  ? __do_page_fault+0x1d8/0x500
+[  409.525000]  stackoverflow+0x7/0xa [sys_stackoverflow]
+[  409.525124]  do_syscall_64+0x7b/0x37d
+[  409.525261]  ? do_page_fault+0x37/0x12e
+[  409.525365]  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+[  409.525491] RIP: 0033:0x7f64c1f491c9
+[  409.525588] Code: 01 00 48 81 c4 80 00 00 00 e9 f1 fe ff ff 0f 1f 00 48 89 f8 48 89 f7 48 89 d6 48 89 ca 4d 89 c2 4d 89 c8 4c 8b 4c 24 08 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 97 dc 2c 00 f7 d8 64 89 01 48
+[  409.525954] RSP: 002b:00007fff8b2df0e8 EFLAGS: 00000206 ORIG_RAX: 000000000000015e
+[  409.526124] RAX: ffffffffffffffda RBX: 0000000000000000 RCX: 00007f64c1f491c9
+[  409.526279] RDX: 0000000000400640 RSI: 00007fff8b2df218 RDI: 00007fff8b2df100
+[  409.526433] RBP: 00007fff8b2df120 R08: 0000000000000000 R09: 00007fff8b2df208
+[  409.526588] R10: 00007f64c2218e80 R11: 0000000000000206 R12: 00000000004004d0
+[  409.526743] R13: 00007fff8b2df200 R14: 0000000000000000 R15: 0000000000000000
+[  409.526899] Modules linked in: sys_stackoverflow(OE) sg sr_mod sd_mod cdrom crc32c_intel ata_generic pata_acpi floppy mptspi scsi_transport_spi ata_piix libata mptscsih mptbase autofs4 [last unloaded: sys_stackoverflow]
+[  409.527289] ---[ end trace bfce28fe0a6a7169 ]---
+[  409.527414] RIP: 0010:recursion+0x4d/0x80 [sys_stackoverflow]
+[  409.527547] Code: 8b 84 24 f8 07 00 00 65 48 33 04 25 28 00 00 00 75 37 48 81 c4 00 08 00 00 5b c3 48 89 e7 48 c7 c6 24 30 37 c0 b9 13 00 00 00 <f3> a4 89 da 48 89 e6 48 c7 c7 38 30 37 c0 31 c0 e8 77 aa 13 c5 8d
+[  409.527913] RSP: 0018:ffff9b03c00b7e60 EFLAGS: 00010287
+[  409.528037] RAX: 0000000000000000 RBX: 0000000000000007 RCX: 0000000000000013
+[  409.528193] RDX: 0000000000000000 RSI: ffffffffc0373024 RDI: ffff9b03c00b7e60
+[  409.528349] RBP: 000000000000015e R08: 0000000000000048 R09: 0000000000019178
+[  409.528503] R10: ffffffff8661f264 R11: 0000000000000412 R12: 0000000000000000
+[  409.528658] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+[  409.528848] FS:  00007f64c2435740(0000) GS:ffff908a3ba00000(0000) knlGS:0000000000000000
+[  409.529427] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  409.529563] CR2: ffff9b03c00b7e58 CR3: 00000001399ee005 CR4: 00000000000606f0
+[  409.530568] WARNING: CPU: 0 PID: 0 at kernel/rcu/tree.c:574 rcu_eqs_enter.isra.45+0x8f/0xa0
+[  409.530763] Modules linked in: sys_stackoverflow(OE) sg sr_mod sd_mod cdrom crc32c_intel ata_generic pata_acpi floppy mptspi scsi_transport_spi ata_piix libata mptscsih mptbase autofs4 [last unloaded: sys_stackoverflow]
+[  409.532407] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G      D    OE     4.20.6+ #8
+[  409.532581] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 09/21/2015
+[  409.532815] RIP: 0010:rcu_eqs_enter.isra.45+0x8f/0xa0
+[  409.532940] Code: a8 00 00 00 00 00 00 00 65 48 03 1d 43 37 b5 7a b8 02 00 00 00 f0 0f c1 83 b8 00 00 00 5b 5d c3 48 89 ef e8 e3 e0 ff ff eb d3 <0f> 0b eb 94 0f 1f 00 66 2e 0f 1f 84 00 00 00 00 00 53 48 8b 1d 28
+[  409.533318] RSP: 0018:ffffffff86203e90 EFLAGS: 00010002
+[  409.533601] RAX: ffff908a3ba21140 RBX: 0000000000021140 RCX: 0000000000000000
+[  409.533766] RDX: 4000000000000000 RSI: 0000000000000000 RDI: 0000005f59874767
+[  409.533926] RBP: 0000000000000000 R08: 0000000000000001 R09: 0000000000000000
+[  409.534086] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+[  409.534248] R13: 0000000000000000 R14: ffffffff86211740 R15: ffffffff86211740
+[  409.534459] FS:  0000000000000000(0000) GS:ffff908a3ba00000(0000) knlGS:0000000000000000
+[  409.534667] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  409.534803] CR2: 00000000006e5ab8 CR3: 000000013957c002 CR4: 00000000000606f0
+[  409.535002] Call Trace:
+[  409.535102]  do_idle+0x17f/0x250
+[  409.535204]  cpu_startup_entry+0x14/0x20
+[  409.535312]  start_kernel+0x4c1/0x4e1
+[  409.535437]  ? set_init_arg+0x50/0x50
+[  409.535540]  secondary_startup_64+0xa4/0xb0
+[  409.535650] ---[ end trace bfce28fe0a6a716a ]---
+
+Message from syslogd@vl89 at May 12 22:22:58 ...
+ kernel:BUG: stack guard page was hit at 00000000639581c6 (stack is 00000000f3191cd3..00000000760a8c89)
